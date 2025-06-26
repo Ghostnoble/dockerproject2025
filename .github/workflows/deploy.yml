@@ -1,12 +1,44 @@
-version: "3"
+name: CI/CD Pipeline
 
-services:
-  frontend:
-    image: ghostnoble/frontend:v1
-    ports:
-      - "80:80"
+on:
+  push:
+    branches:
+      - main
 
-  backend:
-    image: ghostnoble/backend:v1
-    ports:
-      - "5000:5000"
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Frontend Image
+      run: |
+        docker build -t ghostnoble/frontend:v1 frontend
+        docker push ghostnoble/frontend:v1
+
+    - name: Build and Push Backend Image
+      run: |
+        docker build -t ghostnoble/backend:v1 backend
+        docker push ghostnoble/backend:v1
+
+    - name: Deploy to Azure VM via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VM_IP }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_PRIVATE_KEY }}
+        script: |
+          cd ~/dockerproject2025
+          git pull
+          docker pull ghostnoble/frontend:v1
+          docker pull ghostnoble/backend:v1
+          docker-compose down
+          docker-compose up -d
