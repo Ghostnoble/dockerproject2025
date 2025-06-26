@@ -27,14 +27,16 @@ jobs:
       with:
         context: frontend
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/frontend:latest
 
     - name: Build and Push Backend Image
       uses: docker/build-push-action@v4
       with:
         context: backend
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/backend:latest
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/backend:latest
 
     - name: Deploy to Azure VM via SSH
       uses: appleboy/ssh-action@v1.0.3
