@@ -1,3 +1,6 @@
+- name: Show which file is running
+  run: echo "✅ Running from deploy.yml"
+
 name: CI/CD Pipeline
 
 on:
